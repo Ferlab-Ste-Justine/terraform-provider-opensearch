@@ -1,0 +1,75 @@
+package provider
+
+import (
+	"encoding/json"
+	"io/ioutil"
+	"path"
+)
+
+type UserModel struct {
+	Username string
+	Password string        `json:"password,omitempty"`
+	SecurityRoles []string `json:"opendistro_security_roles"`
+	BackendRoles  []string `json:"backend_roles"`
+}
+
+func (reqCon *RequestContext) UpsertUser(user UserModel) error {
+	userStr, marErr := json.Marshal(user)
+    if marErr != nil {
+        return marErr
+    }
+
+	res, err := reqCon.Do(
+		"PUT", 
+		path.Join("_plugins/_security/api/internalusers/", user.Username),
+		string(userStr), 
+	)
+
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	
+	return nil
+}
+
+func (reqCon *RequestContext) GetUser(username string) (*UserModel, error) {
+	res, err := reqCon.Do(
+		"GET", 
+		path.Join("_plugins/_security/api/internalusers/", username),
+		"", 
+	)
+	
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	b, bErr := ioutil.ReadAll(res.Body)
+	if bErr != nil {
+		return nil, bErr
+	}
+
+	var user UserModel
+	uErr := json.Unmarshal(b, &user)
+	if uErr != nil {
+		return nil, uErr
+	}
+	
+	return &user, nil
+}
+
+func (reqCon *RequestContext) DeleteUser(username string) error {
+	res, err := reqCon.Do(
+		"DELETE", 
+		path.Join("_plugins/_security/api/internalusers/", username),
+		"", 
+	)
+	
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	
+	return nil
+}
