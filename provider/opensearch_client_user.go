@@ -7,8 +7,8 @@ import (
 )
 
 type UserModel struct {
-	Username string
-	Password string        `json:"password,omitempty"`
+	Username string        `json:"-"`
+	Password string        `json:"password"`
 	SecurityRoles []string `json:"opendistro_security_roles"`
 	BackendRoles  []string `json:"backend_roles"`
 }
@@ -56,6 +56,7 @@ func (reqCon *RequestContext) GetUser(username string) (*UserModel, error) {
 		return nil, uErr
 	}
 	
+	user.Username = username
 	return &user, nil
 }
 

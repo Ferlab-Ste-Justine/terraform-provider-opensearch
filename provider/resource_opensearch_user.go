@@ -29,7 +29,7 @@ func resourceOpensearchUser() *schema.Resource {
 			"password": {
 				Description: "Password of the user.",
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
@@ -61,10 +61,8 @@ func userSchemaToModel(d *schema.ResourceData) UserModel {
 	username, _ := d.GetOk("username")
 	model.Username = username.(string)
 
-	password, passwordExist := d.GetOk("password")
-	if passwordExist {
-		model.Password = password.(string)
-	}
+	password, _ := d.GetOk("password")
+	model.Password = password.(string)
 
 	securityRoles, securityRolesExist := d.GetOk("opendistro_security_roles")
 	if securityRolesExist {
