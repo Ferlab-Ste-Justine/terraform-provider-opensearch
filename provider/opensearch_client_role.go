@@ -6,12 +6,12 @@ import (
 	"path"
 )
 
-type TenantPermissionsModel struct {
+type TenantPermissionModel struct {
 	TenantPatterns []string `json:"tenant_patterns"`
 	AllowedActions []string `json:"allowed_actions"`
 }
 
-type IndexPermissionsModel struct {
+type IndexPermissionModel struct {
 	IndexPatterns         []string      `json:"index_patterns"`
 	AllowedActions        []string      `json:"allowed_actions"`
 	MaskedFields          []string      `json:"masked_fields"`
@@ -22,9 +22,9 @@ type IndexPermissionsModel struct {
 type RoleModel struct {
 	Name               string
 	Description        string
-	ClusterPermissions []string               `json:"cluster_permissions"`
-    TenantPermissions  TenantPermissionsModel `json:"tenant_permissions"`
-	IndexPermissions   IndexPermissionsModel `json:"index_permissions"`
+	ClusterPermissions []string                 `json:"cluster_permissions"`
+    TenantPermissions  []TenantPermissionModel `json:"tenant_permissions"`
+	IndexPermissions   []IndexPermissionModel  `json:"index_permissions"`
 }
 
 func (reqCon *RequestContext) UpsertRole(role RoleModel) error {
