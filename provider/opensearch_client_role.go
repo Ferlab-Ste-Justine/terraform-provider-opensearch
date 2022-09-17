@@ -20,9 +20,8 @@ type IndexPermissionModel struct {
 }
 
 type RoleModel struct {
-	Name               string
-	Description        string
-	ClusterPermissions []string                 `json:"cluster_permissions"`
+	Name               string                  `json:"-"`
+	ClusterPermissions []string                `json:"cluster_permissions"`
     TenantPermissions  []TenantPermissionModel `json:"tenant_permissions"`
 	IndexPermissions   []IndexPermissionModel  `json:"index_permissions"`
 }
@@ -70,6 +69,7 @@ func (reqCon *RequestContext) GetRole(name string) (*RoleModel, error) {
 		return nil, uErr
 	}
 	
+	role.Name = name
 	return &role, nil
 }
 

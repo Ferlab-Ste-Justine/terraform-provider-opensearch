@@ -26,13 +26,6 @@ func resourceOpensearchRole() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
-			"description": {
-				Description: "Description of the role.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     false,
-				ValidateFunc: validation.StringIsNotEmpty,
-			},
 			"cluster_permissions": {
 				Description: "Permissions for cluster wide actions the role has.",
 				Type:     schema.TypeSet,
@@ -189,7 +182,6 @@ func indexPermissionSchemaToModel(d *schema.ResourceData) IndexPermissionModel {
 func roleSchemaToModel(d *schema.ResourceData) RoleModel {
 	model := RoleModel{
 		Name:               "",
-		Description:        "",
 		ClusterPermissions: []string{},
 		TenantPermissions:  []TenantPermissionModel{},
 		IndexPermissions:   []IndexPermissionModel{},
@@ -197,11 +189,6 @@ func roleSchemaToModel(d *schema.ResourceData) RoleModel {
 
 	name, _ := d.GetOk("name")
 	model.Name = name.(string)
-
-	description, descriptionExist := d.GetOk("description")
-	if descriptionExist {
-		model.Description = description.(string)
-	}
 
 	clusterPermissions, clusterPermissionsExist := d.GetOk("cluster_permissions")
 	if clusterPermissionsExist {
