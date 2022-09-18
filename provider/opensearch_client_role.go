@@ -63,12 +63,13 @@ func (reqCon *RequestContext) GetRole(name string) (*RoleModel, error) {
 		return nil, bErr
 	}
 
-	var role RoleModel
-	uErr := json.Unmarshal(b, &role)
+	roleMap := make(map[string]RoleModel)
+	uErr := json.Unmarshal(b, &roleMap)
 	if uErr != nil {
 		return nil, uErr
 	}
 	
+	role := roleMap[name]
 	role.Name = name
 	return &role, nil
 }

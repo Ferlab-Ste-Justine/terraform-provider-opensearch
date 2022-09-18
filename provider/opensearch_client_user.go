@@ -50,12 +50,13 @@ func (reqCon *RequestContext) GetUser(username string) (*UserModel, error) {
 		return nil, bErr
 	}
 
-	var user UserModel
-	uErr := json.Unmarshal(b, &user)
+	userMap := make(map[string]UserModel)
+	uErr := json.Unmarshal(b, &userMap)
 	if uErr != nil {
 		return nil, uErr
 	}
 	
+	user := userMap[username]
 	user.Username = username
 	return &user, nil
 }

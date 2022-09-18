@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	//opensearch "github.com/opensearch-project/opensearch-go"
 )
 
 func init() {
