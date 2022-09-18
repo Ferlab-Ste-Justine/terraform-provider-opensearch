@@ -9,8 +9,8 @@ import (
 type RoleMappingModel struct {
 	Role         string                  `json:"-"`
 	BackendRoles []string                `json:"backend_roles"`
-    Hosts        []string
-	Users        []string
+    Hosts        []string				 `json:"hosts"`
+	Users        []string				 `json:"users"`
 }
 
 func (reqCon *RequestContext) UpsertRoleMapping(roleMapping RoleMappingModel) error {
