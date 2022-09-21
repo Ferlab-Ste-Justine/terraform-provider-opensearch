@@ -22,7 +22,8 @@ func (reqCon *RequestContext) UpsertRoleMapping(roleMapping RoleMappingModel) er
 	res, err := reqCon.Do(
 		"PUT", 
 		path.Join("_plugins/_security/api/rolesmapping/", roleMapping.Role),
-		string(roleMappingStr), 
+		string(roleMappingStr),
+		[]int64{},
 	)
 
 	if err != nil {
@@ -38,6 +39,7 @@ func (reqCon *RequestContext) GetRoleMapping(role string) (*RoleMappingModel, er
 		"GET", 
 		path.Join("_plugins/_security/api/rolesmapping/", role),
 		"",
+		[]int64{},
 	)
 	
 	if err != nil {
@@ -65,7 +67,8 @@ func (reqCon *RequestContext) DeleteRoleMapping(role string) error {
 	res, err := reqCon.Do(
 		"DELETE", 
 		path.Join("_plugins/_security/api/rolesmapping/", role),
-		"", 
+		"",
+		[]int64{},
 	)
 	
 	if err != nil {

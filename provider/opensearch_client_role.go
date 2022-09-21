@@ -35,7 +35,8 @@ func (reqCon *RequestContext) UpsertRole(role RoleModel) error {
 	res, err := reqCon.Do(
 		"PUT", 
 		path.Join("_plugins/_security/api/roles/", role.Name),
-		string(roleStr), 
+		string(roleStr),
+		[]int64{},
 	)
 
 	if err != nil {
@@ -50,7 +51,8 @@ func (reqCon *RequestContext) GetRole(name string) (*RoleModel, error) {
 	res, err := reqCon.Do(
 		"GET", 
 		path.Join("_plugins/_security/api/roles/", name),
-		"", 
+		"",
+		[]int64{},
 	)
 	
 	if err != nil {
@@ -78,7 +80,8 @@ func (reqCon *RequestContext) DeleteRole(name string) error {
 	res, err := reqCon.Do(
 		"DELETE", 
 		path.Join("_plugins/_security/api/roles/", name),
-		"", 
+		"",
+		[]int64{},
 	)
 	
 	if err != nil {

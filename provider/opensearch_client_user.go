@@ -22,7 +22,8 @@ func (reqCon *RequestContext) UpsertUser(user UserModel) error {
 	res, err := reqCon.Do(
 		"PUT", 
 		path.Join("_plugins/_security/api/internalusers/", user.Username),
-		string(userStr), 
+		string(userStr),
+		[]int64{},
 	)
 
 	if err != nil {
@@ -37,7 +38,8 @@ func (reqCon *RequestContext) GetUser(username string) (*UserModel, error) {
 	res, err := reqCon.Do(
 		"GET", 
 		path.Join("_plugins/_security/api/internalusers/", username),
-		"", 
+		"",
+		[]int64{},
 	)
 	
 	if err != nil {
@@ -65,7 +67,8 @@ func (reqCon *RequestContext) DeleteUser(username string) error {
 	res, err := reqCon.Do(
 		"DELETE", 
 		path.Join("_plugins/_security/api/internalusers/", username),
-		"", 
+		"",
+		[]int64{}, 
 	)
 	
 	if err != nil {

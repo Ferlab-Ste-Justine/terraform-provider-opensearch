@@ -99,6 +99,7 @@ func Provider() *schema.Provider {
 			"opensearch_role": resourceOpensearchRole(),
 			"opensearch_user": resourceOpensearchUser(),
 			"opensearch_role_mapping": resourceOpensearchRoleMapping(),
+			"opensearch_ism_policy": resourceOpensearchIsmPolicy(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 		},

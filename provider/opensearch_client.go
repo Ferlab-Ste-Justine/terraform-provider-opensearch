@@ -40,7 +40,16 @@ func (reqCon *RequestContext) AtLastEndpoint() bool {
 	return ((*reqCon).CurrentEndpoint + 1) == len((*(*reqCon).Client).Endpoints)
 }
 
-func (reqCon *RequestContext) Do(method string, urlPath string, body string) (*http.Response, error) {
+func inArr(val int64, arr []int64) bool {
+	for _, arrVal := range arr {
+		if arrVal == val {
+			return true
+		}
+	}
+	return false
+}
+
+func (reqCon *RequestContext) Do(method string, urlPath string, body string, okBadCodes []int64) (*http.Response, error) {
 	endpoint := reqCon.GetCurrentEndpoint()
 	u, uErr := url.Parse(endpoint)
 	if uErr != nil {
@@ -76,10 +85,10 @@ func (reqCon *RequestContext) Do(method string, urlPath string, body string) (*h
 			(*reqCon).CurrentEndpoint += 1
 		}
 		
-		return reqCon.Do(method, urlPath, body)
+		return reqCon.Do(method, urlPath, body, okBadCodes)
 	}
 
-	if res.StatusCode >= 400 {
+	if res.StatusCode >= 400 && !inArr(int64(res.StatusCode), okBadCodes) {
 		defer res.Body.Close()
 
 		if (*reqCon).RetriesLeft == 0 {
@@ -103,7 +112,7 @@ func (reqCon *RequestContext) Do(method string, urlPath string, body string) (*h
 			(*reqCon).CurrentEndpoint += 1
 		}
 		
-		return reqCon.Do(method, urlPath, body)
+		return reqCon.Do(method, urlPath, body, okBadCodes)
 	}
 
 	return res, nil
