@@ -1,8 +1,8 @@
 package provider
 
 import (
-	//"errors"
-	//"fmt"
+	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -37,7 +37,7 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 			},
 			"ism_template": {
 				Description: "Match of the indices to apply the policy on.",
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
                 Optional: true,
                 ForceNew: false,
 				MaxItems: 1,
@@ -68,9 +68,9 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 			},
 			"states": {
 				Description: "Permissions for index access the role has.",
-                Type: schema.TypeSet,
-                Optional: true,
-                ForceNew: false,
+                Type:        schema.TypeSet,
+				Required:    true,
+                ForceNew:    false,
                 Elem: &schema.Resource{
                     Schema: map[string]*schema.Schema{
 						"name": {
@@ -93,7 +93,7 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 									},
 									"retry": {
 										Description: "Retry policy when the action fails",
-										Type:     schema.TypeList,
+										Type:     schema.TypeSet,
 										Optional: true,
 										MaxItems: 1,
 										Elem: &schema.Resource{
@@ -211,18 +211,53 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 	}
 }
 
-func resourceOpensearchIsmPolicyCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOpensearchIsmPolicyRead(d *schema.ResourceData, meta interface{}) error {
+	cli := meta.(OpensearchClient)
+	policyId := d.Id()
+
+	policy, err := cli.GetRequestContext().GetIsmPolicy(policyId)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Error retrieving existing policy '%s': %s", policyId, err.Error()))
+	}
+
+	writeIsmPolicyModelToSchema(d, policy)
+
 	return nil
+}
+
+func resourceOpensearchIsmPolicyCreate(d *schema.ResourceData, meta interface{}) error {
+	cli := meta.(OpensearchClient)
+	policy := ismPolicySchemaToModel(d)
+
+	err := cli.GetRequestContext().UpsertIsmPolicy(policy)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Error creating policy '%s': %s", policy.PolicyId, err.Error()))
+	}
+
+	d.SetId(policy.PolicyId)
+	return resourceOpensearchIsmPolicyRead(d, meta)
 }
 
 func resourceOpensearchIsmPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
+	cli := meta.(OpensearchClient)
+	policy := ismPolicySchemaToModel(d)
 
-func resourceOpensearchIsmPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	return nil
+	err := cli.GetRequestContext().UpsertIsmPolicy(policy)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Error updating existing policy '%s': %s", policy.PolicyId, err.Error()))
+	}
+
+	return resourceOpensearchIsmPolicyRead(d, meta)
 }
 
 func resourceOpensearchIsmPolicyDelete(d *schema.ResourceData, meta interface{}) error {
+	cli := meta.(OpensearchClient)
+	policyId := d.Id()
+
+	err := cli.GetRequestContext().DeleteIsmPolicy(policyId)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Error deleting existing policy '%s': %s", policyId, err.Error()))
+	}
+
 	return nil
 }

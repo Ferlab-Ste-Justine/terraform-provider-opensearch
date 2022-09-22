@@ -49,13 +49,16 @@ func inArr(val int64, arr []int64) bool {
 	return false
 }
 
-func (reqCon *RequestContext) Do(method string, urlPath string, body string, okBadCodes []int64) (*http.Response, error) {
+func (reqCon *RequestContext) Do(method string, urlPath string, queryString string, body string, okBadCodes []int64) (*http.Response, error) {
 	endpoint := reqCon.GetCurrentEndpoint()
 	u, uErr := url.Parse(endpoint)
 	if uErr != nil {
 		return nil, uErr
 	}
 	u.Path = path.Join(u.Path, urlPath)
+	if queryString != "" {
+		u.RawQuery = queryString
+	}
 
 	r := strings.NewReader(body)
 	req, reqErr := http.NewRequest(method, u.String(), r)
@@ -85,7 +88,7 @@ func (reqCon *RequestContext) Do(method string, urlPath string, body string, okB
 			(*reqCon).CurrentEndpoint += 1
 		}
 		
-		return reqCon.Do(method, urlPath, body, okBadCodes)
+		return reqCon.Do(method, urlPath, queryString, body, okBadCodes)
 	}
 
 	if res.StatusCode >= 400 && !inArr(int64(res.StatusCode), okBadCodes) {
@@ -112,7 +115,7 @@ func (reqCon *RequestContext) Do(method string, urlPath string, body string, okB
 			(*reqCon).CurrentEndpoint += 1
 		}
 		
-		return reqCon.Do(method, urlPath, body, okBadCodes)
+		return reqCon.Do(method, urlPath, queryString, body, okBadCodes)
 	}
 
 	return res, nil
