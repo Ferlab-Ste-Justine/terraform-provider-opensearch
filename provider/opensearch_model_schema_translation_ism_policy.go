@@ -75,21 +75,21 @@ func ismStateActionSchemaToModel(d *schema.ResourceData) IsmPsActionModel {
 	return model
 }
 
-func ismPstConditionSchemaToModel(d *schema.ResourceData) IsmPstConditionModel {
+func ismPstConditionSchemaToModel(d map[string]interface{}) IsmPstConditionModel {
 	model := IsmPstConditionModel{}
 
-	minIndexAge, minIndexAgeExists := d.GetOk("min_index_age")
+	minIndexAge, minIndexAgeExists := d["min_index_age"]
 	if minIndexAgeExists {
 		model.MinIndexAge = minIndexAge.(string)
 	}
 	
-	minDocCount, minDocCountExists := d.GetOk("min_doc_count")
+	minDocCount, minDocCountExists := d["min_doc_count"]
 	if minDocCountExists {
 		minDocCountInt64 := int64(minDocCount.(int))
 		model.MinDocCount = &minDocCountInt64
 	}
 
-	minSize, minSizeExists := d.GetOk("min_size")
+	minSize, minSizeExists := d["min_size"]
 	if minSizeExists {
 		model.MinSize = minSize.(string)
 	}
@@ -97,17 +97,17 @@ func ismPstConditionSchemaToModel(d *schema.ResourceData) IsmPstConditionModel {
 	return model
 }
 
-func ismStateTransitionSchemaToModel(d *schema.ResourceData) IsmPsTransitionModel {
+func ismStateTransitionSchemaToModel(d map[string]interface{}) IsmPsTransitionModel {
 	model := IsmPsTransitionModel{
 		Conditions: []IsmPstConditionModel{},
 	}
 
-	stateName, _ := d.GetOk("name")
+	stateName := d["state_name"]
 	model.StateName = stateName.(string)
 
-	conditions, _ := d.GetOk("conditions")
+	conditions := d["conditions"]
 	for _, val := range (conditions.(*schema.Set)).List() {
-		model.Conditions = append(model.Conditions, ismPstConditionSchemaToModel(val.(*schema.ResourceData)))
+		model.Conditions = append(model.Conditions, ismPstConditionSchemaToModel(val.(map[string]interface{})))
 	}
 
 	return model
@@ -132,7 +132,7 @@ func ismStateSchemaToModel(d map[string]interface{}) IsmPolicyStateModel {
 	transitions, transitionsExist := d["transitions"]
 	if transitionsExist {
 		for _, val := range transitions.([]interface{}) {
-			model.Transitions = append(model.Transitions, ismStateTransitionSchemaToModel(val.(*schema.ResourceData)))
+			model.Transitions = append(model.Transitions, ismStateTransitionSchemaToModel(val.(map[string]interface{})))
 		}
 	}
 
