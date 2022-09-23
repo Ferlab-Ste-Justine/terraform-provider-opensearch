@@ -81,8 +81,8 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 						},
 						"actions": {
 							Description: "Actions that should be run when an index reach the state.",
-							Type:        schema.TypeSet,
-							Required:    true,
+							Type:        schema.TypeList,
+							Optional:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"timeout": {
@@ -162,8 +162,8 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 						},
 						"transitions": {
 							Description: "Transition specifications for when an index should transition to another state.",
-							Type:     schema.TypeSet,
-							Required:     true,
+							Type:        schema.TypeList,
+							Optional:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"state_name": {

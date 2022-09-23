@@ -122,14 +122,18 @@ func ismStateSchemaToModel(d *schema.ResourceData) IsmPolicyStateModel {
 	name, _ := d.GetOk("name")
 	model.Name = name.(string)
 
-	actions, _ := d.GetOk("actions")
-	for _, val := range (actions.(*schema.Set)).List() {
-		model.Actions = append(model.Actions, ismStateActionSchemaToModel(val.(*schema.ResourceData)))
+	actions, actionsExist := d.GetOk("actions")
+	if actionsExist {
+		for _, val := range actions.([]interface{}) {
+			model.Actions = append(model.Actions, ismStateActionSchemaToModel(val.(*schema.ResourceData)))
+		}
 	}
 
-	transitions, _ := d.GetOk("transitions")
-	for _, val := range (transitions.(*schema.Set)).List() {
-		model.Transitions = append(model.Transitions, ismStateTransitionSchemaToModel(val.(*schema.ResourceData)))
+	transitions, transitionsExist := d.GetOk("transitions")
+	if transitionsExist {
+		for _, val := range transitions.([]interface{}) {
+			model.Transitions = append(model.Transitions, ismStateTransitionSchemaToModel(val.(*schema.ResourceData)))
+		}
 	}
 
 	return model
@@ -212,78 +216,82 @@ func writeIsmPolicyModelToSchema(d *schema.ResourceData, m *IsmPolicyModel) {
 			"name": v.Name,
 		}
 
-		actions := make([]map[string]interface{}, 0)
-		for _, a := range v.Actions {
-			actionElem := map[string]interface{}{}
-			if a.Timeout != "" {
-				actionElem["timeout"] = a.Timeout
-			}
-
-			if a.Retry != nil {
-				retryElem := map[string]interface{}{}
-
-				retryElem["count"] = a.Retry.Count
-				if a.Retry.Backoff != "" {
-					retryElem["backoff"] = a.Retry.Backoff
+		if len(v.Actions) > 0 {
+			actions := make([]map[string]interface{}, 0)
+			for _, a := range v.Actions {
+				actionElem := map[string]interface{}{}
+				if a.Timeout != "" {
+					actionElem["timeout"] = a.Timeout
 				}
-				if a.Retry.Delay != "" {
-					retryElem["delay"] = a.Retry.Delay
+	
+				if a.Retry != nil {
+					retryElem := map[string]interface{}{}
+	
+					retryElem["count"] = a.Retry.Count
+					if a.Retry.Backoff != "" {
+						retryElem["backoff"] = a.Retry.Backoff
+					}
+					if a.Retry.Delay != "" {
+						retryElem["delay"] = a.Retry.Delay
+					}
+	
+					actionElem["retry"] = []map[string]interface{}{retryElem}
 				}
-
-				actionElem["retry"] = []map[string]interface{}{retryElem}
+	
+				if a.ReadOnly != nil {
+					actionElem["action"] = "read_only"
+				} else if a.ReadWrite != nil {
+					actionElem["action"] = "read_write"
+				} else if a.Open != nil {
+					actionElem["action"] = "open"
+				} else if a.Close != nil {
+					actionElem["action"] = "close"
+				} else if a.Delete != nil {
+					actionElem["action"] = "delete"
+				} else if a.ReplicaCount != nil {
+					actionElem["action"] = "replica_count"
+					actionElem["replica_count"] = a.ReplicaCount.ReplicaCount
+				} else if a.IndexPriority != nil {
+					actionElem["action"] = "index_priority"
+					actionElem["index_priority"] = a.IndexPriority.IndexPriority
+				}
+	
+				actions = append(actions, actionElem)
 			}
-
-			if a.ReadOnly != nil {
-				actionElem["action"] = "read_only"
-			} else if a.ReadWrite != nil {
-				actionElem["action"] = "read_write"
-			} else if a.Open != nil {
-				actionElem["action"] = "open"
-			} else if a.Close != nil {
-				actionElem["action"] = "close"
-			} else if a.Delete != nil {
-				actionElem["action"] = "delete"
-			} else if a.ReplicaCount != nil {
-				actionElem["action"] = "replica_count"
-				actionElem["replica_count"] = a.ReplicaCount.ReplicaCount
-			} else if a.IndexPriority != nil {
-				actionElem["action"] = "index_priority"
-				actionElem["index_priority"] = a.IndexPriority.IndexPriority
-			}
-
-			actions = append(actions, actionElem)
+			stateElem["actions"] = actions
 		}
-		stateElem["actions"] = actions
 
-		transitions := make([]map[string]interface{}, 0)
-		for _, t := range v.Transitions {
-			transitionElem := map[string]interface{}{}
-
-			transitionElem["state_name"] = t.StateName
-			
-			conditions := make([]map[string]interface{}, 0)
-			for _, c := range t.Conditions {
-				conditionElem := map[string]interface{}{}
-
-				if c.MinIndexAge != "" {
-					conditionElem["min_index_age"] = c.MinIndexAge
+		if len(v.Transitions) > 0 {
+			transitions := make([]map[string]interface{}, 0)
+			for _, t := range v.Transitions {
+				transitionElem := map[string]interface{}{}
+	
+				transitionElem["state_name"] = t.StateName
+				
+				conditions := make([]map[string]interface{}, 0)
+				for _, c := range t.Conditions {
+					conditionElem := map[string]interface{}{}
+	
+					if c.MinIndexAge != "" {
+						conditionElem["min_index_age"] = c.MinIndexAge
+					}
+	
+					if c.MinDocCount != nil {
+						conditionElem["min_doc_count"] = (*c.MinDocCount)
+					}
+	
+					if c.MinSize != "" {
+						conditionElem["min_size"] = c.MinSize
+					}
+	
+					conditions = append(conditions, conditionElem)
 				}
-
-				if c.MinDocCount != nil {
-					conditionElem["min_doc_count"] = (*c.MinDocCount)
-				}
-
-				if c.MinSize != "" {
-					conditionElem["min_size"] = c.MinSize
-				}
-
-				conditions = append(conditions, conditionElem)
+				transitionElem["conditions"] = conditions
+	
+				transitions = append(transitions, transitionElem)
 			}
-			transitionElem["conditions"] = conditions
-
-			transitions = append(transitions, transitionElem)
+			stateElem["transitions"] = transitions
 		}
-		stateElem["transitions"] = transitions
 
 		states = append(states, stateElem)
 	}
