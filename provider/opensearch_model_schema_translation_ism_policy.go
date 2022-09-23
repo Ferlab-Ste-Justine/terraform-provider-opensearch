@@ -85,8 +85,7 @@ func ismPstConditionSchemaToModel(d map[string]interface{}) IsmPstConditionModel
 	
 	minDocCount, minDocCountExists := d["min_doc_count"]
 	if minDocCountExists {
-		minDocCountInt64 := int64(minDocCount.(int))
-		model.MinDocCount = &minDocCountInt64
+		model.MinDocCount = int64(minDocCount.(int))
 	}
 
 	minSize, minSizeExists := d["min_size"]
@@ -98,16 +97,14 @@ func ismPstConditionSchemaToModel(d map[string]interface{}) IsmPstConditionModel
 }
 
 func ismStateTransitionSchemaToModel(d map[string]interface{}) IsmPsTransitionModel {
-	model := IsmPsTransitionModel{
-		Conditions: []IsmPstConditionModel{},
-	}
+	model := IsmPsTransitionModel{}
 
 	stateName := d["state_name"]
 	model.StateName = stateName.(string)
 
 	conditions := d["conditions"]
 	for _, val := range (conditions.(*schema.Set)).List() {
-		model.Conditions = append(model.Conditions, ismPstConditionSchemaToModel(val.(map[string]interface{})))
+		model.Conditions = ismPstConditionSchemaToModel(val.(map[string]interface{}))
 	}
 
 	return model
@@ -271,25 +268,22 @@ func writeIsmPolicyModelToSchema(d *schema.ResourceData, m *IsmPolicyModel) {
 	
 				transitionElem["state_name"] = t.StateName
 				
-				conditions := make([]map[string]interface{}, 0)
-				for _, c := range t.Conditions {
-					conditionElem := map[string]interface{}{}
-	
-					if c.MinIndexAge != "" {
-						conditionElem["min_index_age"] = c.MinIndexAge
-					}
-	
-					if c.MinDocCount != nil {
-						conditionElem["min_doc_count"] = (*c.MinDocCount)
-					}
-	
-					if c.MinSize != "" {
-						conditionElem["min_size"] = c.MinSize
-					}
-	
-					conditions = append(conditions, conditionElem)
+				conditions := map[string]interface{}{}
+
+				c := t.Conditions
+				if c.MinIndexAge != "" {
+					conditions["min_index_age"] = c.MinIndexAge
 				}
-				transitionElem["conditions"] = conditions
+
+				if c.MinDocCount > 0 {
+					conditions["min_doc_count"] = c.MinDocCount
+				}
+
+				if c.MinSize != "" {
+					conditions["min_size"] = c.MinSize
+				}
+
+				transitionElem["conditions"] = []map[string]interface{}{conditions}
 	
 				transitions = append(transitions, transitionElem)
 			}

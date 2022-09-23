@@ -37,13 +37,13 @@ type IsmPsActionModel struct {
 
 type IsmPstConditionModel struct {
 	MinIndexAge string `json:"min_index_age,omitempty"`
-	MinDocCount *int64  `json:"min_doc_count,omitempty"`
+	MinDocCount int64  `json:"min_doc_count,omitempty"`
 	MinSize     string `json:"min_size,omitempty"`
 }
 
 type IsmPsTransitionModel struct {
 	StateName  string					`json:"state_name"`
-	Conditions []IsmPstConditionModel	`json:"conditions"`
+	Conditions IsmPstConditionModel	    `json:"conditions"`
 }
 
 type IsmPolicyStateModel struct {
@@ -109,7 +109,7 @@ func (reqCon *RequestContext) UpsertIsmPolicy(ismPolicy IsmPolicyModel) error {
     if marErr != nil {
         return marErr
     }
-	
+
 	info, infoErr := reqCon.GetIsmPolicyUpdateInfo(ismPolicy.PolicyId)
 	if infoErr != nil {
 		return infoErr

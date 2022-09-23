@@ -175,6 +175,7 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 										Description: "Conditions that trigger the state change.",
 										Type:        schema.TypeSet,
 										Required:    true,
+										MaxItems: 1,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												//Missing
@@ -189,7 +190,7 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 													Description: "Minimum number of documents after which the index will transition.",
 													Type:         schema.TypeInt,
 													Optional:     true,
-													ValidateFunc: validation.IntAtLeast(0),
+													ValidateFunc: validation.IntAtLeast(1),
 												},
 												"min_size": {
 													Description: "Minimum size (not counting replication) after which the index will transition.",
