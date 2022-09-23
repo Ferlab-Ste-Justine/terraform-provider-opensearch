@@ -59,7 +59,7 @@ type IsmTemplateModel struct {
 
 type IsmPolicyModel struct {
 	PolicyId     string                  `json:"-"`
-	Description  string                  `json:"description,omitempty"`
+	Description  string                  `json:"description"`
 	IsmTemplate  *IsmTemplateModel       `json:"ism_template,omitempty"`
 	DefaultState string                  `json:"default_state"`
 	States       []IsmPolicyStateModel	 `json:"states"`
@@ -103,7 +103,9 @@ func (reqCon *RequestContext) GetIsmPolicyUpdateInfo(policyId string) (*IsmPolic
 }
 
 func (reqCon *RequestContext) UpsertIsmPolicy(ismPolicy IsmPolicyModel) error {	
-	ismPolicyStr, marErr := json.Marshal(ismPolicy)
+	ismPolicyMap := make(map[string]IsmPolicyModel)
+	ismPolicyMap["policy"] = ismPolicy
+	ismPolicyStr, marErr := json.Marshal(ismPolicyMap)
     if marErr != nil {
         return marErr
     }

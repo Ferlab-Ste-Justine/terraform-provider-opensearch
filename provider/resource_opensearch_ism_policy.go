@@ -31,7 +31,7 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 			"description": {
 				Description: "Description for the policy.",
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ForceNew:     false,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},

@@ -113,23 +113,23 @@ func ismStateTransitionSchemaToModel(d *schema.ResourceData) IsmPsTransitionMode
 	return model
 }
 
-func ismStateSchemaToModel(d *schema.ResourceData) IsmPolicyStateModel {
+func ismStateSchemaToModel(d map[string]interface{}) IsmPolicyStateModel {
 	model := IsmPolicyStateModel{
 		Actions:     []IsmPsActionModel{},
 		Transitions: []IsmPsTransitionModel{},
 	}
 
-	name, _ := d.GetOk("name")
+	name, _ := d["name"]
 	model.Name = name.(string)
 
-	actions, actionsExist := d.GetOk("actions")
+	actions, actionsExist := d["actions"]
 	if actionsExist {
 		for _, val := range actions.([]interface{}) {
 			model.Actions = append(model.Actions, ismStateActionSchemaToModel(val.(*schema.ResourceData)))
 		}
 	}
 
-	transitions, transitionsExist := d.GetOk("transitions")
+	transitions, transitionsExist := d["transitions"]
 	if transitionsExist {
 		for _, val := range transitions.([]interface{}) {
 			model.Transitions = append(model.Transitions, ismStateTransitionSchemaToModel(val.(*schema.ResourceData)))
@@ -166,10 +166,8 @@ func ismPolicySchemaToModel(d *schema.ResourceData) IsmPolicyModel {
 	policyId, _ := d.GetOk("policy_id")
 	model.PolicyId = policyId.(string)
 
-	description, descriptionExists := d.GetOk("description")
-	if descriptionExists {
-		model.Description = description.(string)
-	}
+	description, _ := d.GetOk("description")
+	model.Description = description.(string)
 
 	ismTemplate, ismTemplateExist := d.GetOk("ism_template")
 	if ismTemplateExist {
@@ -184,7 +182,7 @@ func ismPolicySchemaToModel(d *schema.ResourceData) IsmPolicyModel {
 
 	states, _ := d.GetOk("states")
 	for _, val := range (states.(*schema.Set)).List() {
-		model.States = append(model.States, ismStateSchemaToModel(val.(*schema.ResourceData)))
+		model.States = append(model.States, ismStateSchemaToModel(val.(map[string]interface{})))
 	}
 
 	return model
