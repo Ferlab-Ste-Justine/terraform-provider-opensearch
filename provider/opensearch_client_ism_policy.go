@@ -136,6 +136,10 @@ func (reqCon *RequestContext) UpsertIsmPolicy(ismPolicy IsmPolicyModel) error {
 	return nil
 }
 
+type IsmPolicyGetModel struct {
+	Policy IsmPolicyModel `json:"policy"`
+}
+
 func (reqCon *RequestContext) GetIsmPolicy(policyId string) (*IsmPolicyModel, error) {
 	res, err := reqCon.Do(
 		"GET", 
@@ -155,12 +159,13 @@ func (reqCon *RequestContext) GetIsmPolicy(policyId string) (*IsmPolicyModel, er
 		return nil, bErr
 	}
 
-	policy := IsmPolicyModel{}
-	uErr := json.Unmarshal(b, &policy)
+	var policyGet IsmPolicyGetModel
+	uErr := json.Unmarshal(b, &policyGet)
 	if uErr != nil {
 		return nil, uErr
 	}
 	
+	policy := policyGet.Policy
 	policy.PolicyId = policyId
 	return &policy, nil
 }
