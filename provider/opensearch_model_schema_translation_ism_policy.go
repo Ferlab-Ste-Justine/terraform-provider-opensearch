@@ -23,15 +23,15 @@ func ismStateActionRetrySchemaToModel(d *schema.ResourceData) IsmPsaRetryModel {
 	return model
 }
 
-func ismStateActionSchemaToModel(d *schema.ResourceData) IsmPsActionModel {
+func ismStateActionSchemaToModel(d map[string]interface{}) IsmPsActionModel {
 	model := IsmPsActionModel{}
 
-	timeout, timeoutExists := d.GetOk("timeout")
+	timeout, timeoutExists := d["timeout"]
 	if timeoutExists {
 		model.Timeout = timeout.(string)
 	}
 
-	retry, retryExists := d.GetOk("retry")
+	retry, retryExists := d["retry"]
 	if retryExists {
 		for _, val := range (retry.(*schema.Set)).List() {
 			retry := ismStateActionRetrySchemaToModel(val.(*schema.ResourceData))
@@ -39,7 +39,7 @@ func ismStateActionSchemaToModel(d *schema.ResourceData) IsmPsActionModel {
 		}
 	}
 
-	action, _ := d.GetOk("action")
+	action := d["action"]
 	actionStr := action.(string)
 	switch actionStr {
 	case "read_only":
@@ -54,7 +54,7 @@ func ismStateActionSchemaToModel(d *schema.ResourceData) IsmPsActionModel {
 		model.Delete = &EmptyModel{}
 	case "replica_count":
 		replicaCountInt64 := int64(-1)
-		replicaCount, replicaCountExists := d.GetOk("replica_count")
+		replicaCount, replicaCountExists := d["replica_count"]
 		if replicaCountExists {
 			replicaCountInt64 = int64(replicaCount.(int))
 		}
@@ -63,7 +63,7 @@ func ismStateActionSchemaToModel(d *schema.ResourceData) IsmPsActionModel {
 		}
 	case "index_priority":
 		indexPriorityint64 := int64(-1)
-		indexPriority, indexPriorityExists := d.GetOk("index_priority")
+		indexPriority, indexPriorityExists := d["index_priority"]
 		if indexPriorityExists {
 			indexPriorityint64 = int64(indexPriority.(int))
 		}
@@ -122,7 +122,7 @@ func ismStateSchemaToModel(d map[string]interface{}) IsmPolicyStateModel {
 	actions, actionsExist := d["actions"]
 	if actionsExist {
 		for _, val := range actions.([]interface{}) {
-			model.Actions = append(model.Actions, ismStateActionSchemaToModel(val.(*schema.ResourceData)))
+			model.Actions = append(model.Actions, ismStateActionSchemaToModel(val.(map[string]interface{})))
 		}
 	}
 
