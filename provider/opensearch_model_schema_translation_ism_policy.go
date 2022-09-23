@@ -139,18 +139,18 @@ func ismStateSchemaToModel(d map[string]interface{}) IsmPolicyStateModel {
 	return model
 }
 
-func ismTemplateSchemaToModel(d *schema.ResourceData) IsmTemplateModel {
+func ismTemplateSchemaToModel(d map[string]interface{}) IsmTemplateModel {
 	model := IsmTemplateModel{
 		IndexPatterns: []string{},
 	}
 
-	priority, priorityExists := d.GetOk("priority")
+	priority, priorityExists := d["priority"]
 	if priorityExists {
 		priorityInt64 := int64(priority.(int))
 		model.Priority = &priorityInt64
 	}
 
-	indexPatterns, _ := d.GetOk("index_patterns")
+	indexPatterns, _ := d["index_patterns"]
 	for _, val := range (indexPatterns.(*schema.Set)).List() {
 		model.IndexPatterns = append(model.IndexPatterns, val.(string))
 	}
@@ -160,7 +160,8 @@ func ismTemplateSchemaToModel(d *schema.ResourceData) IsmTemplateModel {
 
 func ismPolicySchemaToModel(d *schema.ResourceData) IsmPolicyModel {
 	model := IsmPolicyModel{
-		States: []IsmPolicyStateModel{},
+		States:      []IsmPolicyStateModel{},
+		IsmTemplate: []IsmTemplateModel{},
 	}
 
 	policyId, _ := d.GetOk("policy_id")
@@ -172,8 +173,8 @@ func ismPolicySchemaToModel(d *schema.ResourceData) IsmPolicyModel {
 	ismTemplate, ismTemplateExist := d.GetOk("ism_template")
 	if ismTemplateExist {
 		for _, val := range (ismTemplate.(*schema.Set)).List() {
-			ismTemplateModel := ismTemplateSchemaToModel(val.(*schema.ResourceData))
-			model.IsmTemplate = &ismTemplateModel
+			ismTemplateModel := ismTemplateSchemaToModel(val.(map[string]interface{}))
+			model.IsmTemplate = append(model.IsmTemplate, ismTemplateModel)
 		}
 	}
 
@@ -192,17 +193,21 @@ func writeIsmPolicyModelToSchema(d *schema.ResourceData, m *IsmPolicyModel) {
 	d.Set("description", m.Description)
 	d.Set("default_state", m.DefaultState)
 
-	if m.IsmTemplate != nil {
-		ismTemplateElem := map[string]interface{}{
-			"index_patterns": m.IsmTemplate.IndexPatterns,
-		}
+	if len(m.IsmTemplate) > 0 {
+		ismTemplate := make([]map[string]interface{}, 0)
 		
-		if m.IsmTemplate.Priority != nil {
-			ismTemplateElem["priority"] = (*m.IsmTemplate.Priority)
+		for _, val := range m.IsmTemplate {
+			ismTemplateElem := map[string]interface{}{
+				"index_patterns": val.IndexPatterns,
+			}
+			
+			if val.Priority != nil {
+				ismTemplateElem["priority"] = (*val.Priority)
+			}
+			
+			ismTemplate = append(ismTemplate, ismTemplateElem)
 		}
 
-		ismTemplate := make([]map[string]interface{}, 0)
-		ismTemplate = append(ismTemplate, ismTemplateElem)
 		d.Set("ism_template", ismTemplate)
 	} else {
 		d.Set("ism_template", nil)

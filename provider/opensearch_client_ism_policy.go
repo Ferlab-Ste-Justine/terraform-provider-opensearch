@@ -60,7 +60,7 @@ type IsmTemplateModel struct {
 type IsmPolicyModel struct {
 	PolicyId     string                  `json:"-"`
 	Description  string                  `json:"description"`
-	IsmTemplate  *IsmTemplateModel       `json:"ism_template,omitempty"`
+	IsmTemplate  []IsmTemplateModel      `json:"ism_template,omitempty"`
 	DefaultState string                  `json:"default_state"`
 	States       []IsmPolicyStateModel	 `json:"states"`
 }

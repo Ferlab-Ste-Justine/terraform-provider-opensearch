@@ -40,7 +40,6 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 				Type:     schema.TypeSet,
                 Optional: true,
                 ForceNew: false,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"priority": {
