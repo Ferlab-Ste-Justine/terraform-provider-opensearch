@@ -40,13 +40,13 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("OPENSEARCH_CACERT", ""),
 			},
-			"cert": &schema.Schema{
+			"client_cert": &schema.Schema{
 				Description: "File that contains the client certificate used to authentify the user. Can alternatively be set with the OPENSEARCH_CERT environment variable. Can be omitted if password authentication is used.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("OPENSEARCH_CERT", ""),
 			},
-			"key": &schema.Schema{
+			"client_key": &schema.Schema{
 				Description: "File that contains the client encryption key used to authentify the user. Can alternatively be set with the OPENSEARCH_KEY environment variable. Can be omitted if password authentication is used.",
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -112,8 +112,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	username, _ := d.Get("username").(string)
 	password, _ := d.Get("password").(string)
 	caCert, _ := d.Get("ca_cert").(string)
-	cert, _ := d.Get("cert").(string)
-	key, _ := d.Get("key").(string)
+	cert, _ := d.Get("client_cert").(string)
+	key, _ := d.Get("client_key").(string)
 	connectionTimeout, _ := d.Get("connection_timeout").(string)
 	requestTimeout, _ := d.Get("request_timeout").(string)
 	retries, _ := d.Get("retries").(int)
