@@ -139,7 +139,7 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 												"open",
 												"close",
 												"delete",
-												"index_prioty",
+												"index_priority",
 											}, 
 											false,
 										),
