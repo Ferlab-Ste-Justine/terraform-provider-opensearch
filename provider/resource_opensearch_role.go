@@ -50,7 +50,7 @@ func resourceOpensearchRole() *schema.Resource {
 							},
                         },
                         "allowed_actions": {
-                            Type: schema.TypeString,
+                            Type: schema.TypeSet,
                             Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
@@ -74,7 +74,7 @@ func resourceOpensearchRole() *schema.Resource {
 							},
                         },
                         "allowed_actions": {
-                            Type: schema.TypeString,
+                            Type: schema.TypeSet,
                             Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
@@ -105,13 +105,13 @@ func resourceOpensearchRole() *schema.Resource {
 	}
 }
 
-func tenantPermissionSchemaToModel(d *schema.ResourceData) TenantPermissionModel {
+func tenantPermissionSchemaToModel(d map[string]interface{}) TenantPermissionModel {
 	model := TenantPermissionModel{
 		TenantPatterns: []string{},
 		AllowedActions: []string{},
 	}
 
-	tenantPatterns, tenantPatternsExist := d.GetOk("tenant_patterns")
+	tenantPatterns, tenantPatternsExist := d["tenant_patterns"]
 	if tenantPatternsExist {
 		for _, val := range (tenantPatterns.(*schema.Set)).List() {
 			tenantPattern := val.(string)
@@ -119,7 +119,7 @@ func tenantPermissionSchemaToModel(d *schema.ResourceData) TenantPermissionModel
 		}
 	}
 
-	allowedActions, allowedActionsExist := d.GetOk("allowed_actions")
+	allowedActions, allowedActionsExist := d["allowed_actions"]
 	if allowedActionsExist {
 		for _, val := range (allowedActions.(*schema.Set)).List() {
 			allowedAction := val.(string)
@@ -130,7 +130,7 @@ func tenantPermissionSchemaToModel(d *schema.ResourceData) TenantPermissionModel
 	return model
 }
 
-func indexPermissionSchemaToModel(d *schema.ResourceData) IndexPermissionModel {
+func indexPermissionSchemaToModel(d map[string]interface{}) IndexPermissionModel {
 	model := IndexPermissionModel{
 		IndexPatterns:         []string{},
 		AllowedActions:        []string{},
@@ -139,7 +139,7 @@ func indexPermissionSchemaToModel(d *schema.ResourceData) IndexPermissionModel {
 		FieldLevelSecurity:    []string{},
 	}
 
-	indexPatterns, indexPatternsExist := d.GetOk("index_patterns")
+	indexPatterns, indexPatternsExist := d["index_patterns"]
 	if indexPatternsExist {
 		for _, val := range (indexPatterns.(*schema.Set)).List() {
 			indexPattern := val.(string)
@@ -147,7 +147,7 @@ func indexPermissionSchemaToModel(d *schema.ResourceData) IndexPermissionModel {
 		}
 	}
 
-	allowedActions, allowedActionsExist := d.GetOk("allowed_actions")
+	allowedActions, allowedActionsExist := d["allowed_actions"]
 	if allowedActionsExist {
 		for _, val := range (allowedActions.(*schema.Set)).List() {
 			allowedAction := val.(string)
@@ -155,7 +155,7 @@ func indexPermissionSchemaToModel(d *schema.ResourceData) IndexPermissionModel {
 		}
 	}
 
-	maskedFields, maskedFieldsExist := d.GetOk("masked_fields")
+	maskedFields, maskedFieldsExist := d["masked_fields"]
 	if maskedFieldsExist {
 		for _, val := range (maskedFields.(*schema.Set)).List() {
 			maskedField := val.(string)
@@ -163,12 +163,12 @@ func indexPermissionSchemaToModel(d *schema.ResourceData) IndexPermissionModel {
 		}
 	}
 
-	documentLevelSecurity, documentLevelSecurityExist := d.GetOk("document_level_security")
+	documentLevelSecurity, documentLevelSecurityExist := d["document_level_security"]
 	if documentLevelSecurityExist {
 		model.DocumentLevelSecurity = documentLevelSecurity.(string)
 	}
 
-	fieldLevelSecurity, fieldLevelSecurityExist := d.GetOk("field_level_security")
+	fieldLevelSecurity, fieldLevelSecurityExist := d["field_level_security"]
 	if fieldLevelSecurityExist {
 		for _, val := range (fieldLevelSecurity.(*schema.Set)).List() {
 			field := val.(string)
@@ -201,14 +201,14 @@ func roleSchemaToModel(d *schema.ResourceData) RoleModel {
 	tenantPermissions, tenantPermissionsExist := d.GetOk("tenant_permissions")
 	if tenantPermissionsExist {
 		for _, val := range (tenantPermissions.(*schema.Set)).List() {
-			model.TenantPermissions = append(model.TenantPermissions, tenantPermissionSchemaToModel(val.(*schema.ResourceData)))
+			model.TenantPermissions = append(model.TenantPermissions, tenantPermissionSchemaToModel(val.(map[string]interface{})))
 		}
 	}
 
 	indexPermissions, indexPermissionsExist := d.GetOk("index_permissions")
 	if indexPermissionsExist {
 		for _, val := range (indexPermissions.(*schema.Set)).List() {
-			model.IndexPermissions = append(model.IndexPermissions, indexPermissionSchemaToModel(val.(*schema.ResourceData)))
+			model.IndexPermissions = append(model.IndexPermissions, indexPermissionSchemaToModel(val.(map[string]interface{})))
 		}
 	}
 
