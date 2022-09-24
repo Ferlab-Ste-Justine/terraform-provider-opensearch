@@ -109,9 +109,9 @@ func resourceOpensearchIsmPolicy() *schema.Resource {
 													Optional:     true,
 													ValidateFunc: validation.StringInSlice(
 														[]string{
-															"Exponential",
-															"Linear",
-															"Constant",
+															"exponential",
+															"linear",
+															"constant",
 														}, 
 														false,
 													),

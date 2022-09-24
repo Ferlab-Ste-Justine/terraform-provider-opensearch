@@ -23,6 +23,10 @@ type IsmPsaRetryModel struct {
 	Delay   string `json:"delay,omitempty"`
 }
 
+func (r *IsmPsaRetryModel) IsDefault() bool {
+	return r.Count == 3 && r.Delay == "1m" && r.Backoff == "exponential"
+}
+
 type IsmPsActionModel struct {
 	Timeout       string                     `json:"timeout,omitempty"`
 	Retry         *IsmPsaRetryModel          `json:"retry,omitempty"`
@@ -52,6 +56,28 @@ type IsmPolicyStateModel struct {
 	Transitions []IsmPsTransitionModel          `json:"transitions"`
 }
 
+//Opensearch api explicitly returns default value for retries even when none is passed.
+//This could cause constant updates that do nothing on terraform apply.
+//This function helps trim default retries value that map to an absent retry in the terraform state
+func (s *IsmPolicyStateModel) GetDefaultRetriesAdjustedActions(next *IsmPolicyStateModel) []IsmPsActionModel {
+	if len(s.Actions) != len(next.Actions) {
+		return next.Actions
+	}
+
+	trimmedActions := make([]IsmPsActionModel, len(s.Actions))
+	for idx, _ := range s.Actions {
+		currAction := s.Actions[idx]
+		nextAction := next.Actions[idx]
+		if currAction.Retry == nil && nextAction.Retry.IsDefault() {
+			nextAction.Retry = nil
+		}
+
+		trimmedActions[idx] = nextAction
+	}
+
+	return trimmedActions
+}
+
 type IsmTemplateModel struct {
 	Priority      *int64	`json:"priority,omitempty"`
 	IndexPatterns []string	`json:"index_patterns"`
@@ -63,6 +89,16 @@ type IsmPolicyModel struct {
 	IsmTemplate  []IsmTemplateModel      `json:"ism_template,omitempty"`
 	DefaultState string                  `json:"default_state"`
 	States       []IsmPolicyStateModel	 `json:"states"`
+}
+
+func (p *IsmPolicyModel) GetStateNamed(name string) *IsmPolicyStateModel {
+	for _, state := range p.States {
+		if state.Name == name {
+			return &state
+		}
+	}
+
+	return nil
 }
 
 type IsmPolicyUpdateInfoModel struct {

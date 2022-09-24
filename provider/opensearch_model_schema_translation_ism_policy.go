@@ -4,18 +4,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ismStateActionRetrySchemaToModel(d *schema.ResourceData) IsmPsaRetryModel {
+func ismStateActionRetrySchemaToModel(d map[string]interface{}) IsmPsaRetryModel {
 	model := IsmPsaRetryModel{}
 
-	count, _ := d.GetOk("count")
+	count := d["count"]
 	model.Count = int64(count.(int))
 
-	backoff, backoffExists := d.GetOk("backoff")
+	backoff, backoffExists := d["backoff"]
 	if backoffExists {
 		model.Backoff = backoff.(string)
 	}
 
-	delay, delayExists := d.GetOk("delay")
+	delay, delayExists := d["delay"]
 	if delayExists {
 		model.Delay = delay.(string)
 	}
@@ -34,7 +34,7 @@ func ismStateActionSchemaToModel(d map[string]interface{}) IsmPsActionModel {
 	retry, retryExists := d["retry"]
 	if retryExists {
 		for _, val := range (retry.(*schema.Set)).List() {
-			retry := ismStateActionRetrySchemaToModel(val.(*schema.ResourceData))
+			retry := ismStateActionRetrySchemaToModel(val.(map[string]interface{}))
 			model.Retry = &retry
 		}
 	}
@@ -187,6 +187,8 @@ func ismPolicySchemaToModel(d *schema.ResourceData) IsmPolicyModel {
 }
 
 func writeIsmPolicyModelToSchema(d *schema.ResourceData, m *IsmPolicyModel) {
+	previousPolicy := ismPolicySchemaToModel(d)
+
 	d.Set("description", m.Description)
 	d.Set("default_state", m.DefaultState)
 
@@ -212,13 +214,17 @@ func writeIsmPolicyModelToSchema(d *schema.ResourceData, m *IsmPolicyModel) {
 
 	states := make([]map[string]interface{}, 0)
 	for _, v := range m.States {
+		prevState := previousPolicy.GetStateNamed(v.Name)
+
 		stateElem := map[string]interface{}{
 			"name": v.Name,
 		}
 
-		if len(v.Actions) > 0 {
+		adjustedActions := prevState.GetDefaultRetriesAdjustedActions(&v)
+		if len(adjustedActions) > 0 {
+
 			actions := make([]map[string]interface{}, 0)
-			for _, a := range v.Actions {
+			for _, a := range adjustedActions {
 				actionElem := map[string]interface{}{}
 				if a.Timeout != "" {
 					actionElem["timeout"] = a.Timeout
